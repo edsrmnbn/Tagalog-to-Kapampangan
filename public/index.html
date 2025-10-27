@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tagalog → Kapampangan Translator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f3f4f6;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+    textarea {
+      width: 400px;
+      height: 100px;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      resize: none;
+      outline: none;
+      margin-bottom: 10px;
+    }
+    button {
+      background-color: #4f46e5;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background-color: #4338ca;
+    }
+    #result {
+      margin-top: 20px;
+      background: white;
+      width: 400px;
+      min-height: 80px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 10px;
+      font-size: 18px;
+      color: #111;
+      white-space: pre-wrap;
+    }
+    #status {
+      margin-top: 10px;
+      color: #666;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Tagalog → Kapampangan Translator</h1>
+  <textarea id="inputText" placeholder="Enter Tagalog text..."></textarea>
+  <button id="translateBtn">Translate</button>
+  <div id="status"></div>
+  <div id="result"></div>
+
+  <script>
+    const button = document.getElementById("translateBtn");
+    const input = document.getElementById("inputText");
+    const resultBox = document.getElementById("result");
+    const statusBox = document.getElementById("status");
+
+    const API_URL = "/translate"; // works automatically on Render and locally
+
+    button.addEventListener("click", async () => {
+      const text = input.value.trim();
+      if (!text) {
+        resultBox.textContent = "⚠️ Please enter some text first.";
+        return;
+      }
+
+      resultBox.textContent = "";
+      statusBox.textContent = "⏳ Translating...";
+
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text })
+        });
+
+        if (!res.ok) {
+          statusBox.textContent = "❌ Translation request failed.";
+          const errorText = await res.text();
+          resultBox.textContent = errorText;
+          return;
+        }
+
+        const data = await res.json();
+        if (data.error) {
+          statusBox.textContent = "⚠️ Error: " + data.error;
+        } else {
+          statusBox.textContent = `✅ Source: ${data.source}`;
+          resultBox.textContent = data.translated || "(no result)";
+        }
+      } catch (err) {
+        statusBox.textContent = "❌ Network error. Is the server running?";
+        console.error(err);
+      }
+    });
+  </script>
+</body>
+</html>
